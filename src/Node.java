@@ -1,25 +1,42 @@
 import java.util.*;
+import java.text.*;
 
 public class Node {
 
-    //---- Variables -----
+    //---- Variables for Nodes -----//
     protected String name;
     protected double latitude;
     protected double longitude;
-    protected List<Node> neighbours = new ArrayList<>();
-    protected Node startVertex;
-    protected Node destination;
-    protected Node currentVertex;
 
-    //---- Constructor ----
+    //----- Calculation Variables -----//
+    //totalG keeps track of total distance travel in the A* algorithm
+    protected double totalG = 0;
+    //totalH keeps track of the heuristic value fron start to destination
+    protected double totalH = 0;
+
+    //----- Formating -----//
+    DecimalFormat df = new DecimalFormat("#.##");
+
+    //----- List & Hashmap Variables -----//
+    protected List<Node> neighbours = new ArrayList<>();
+    protected HashMap<String,Node> openNodes = new HashMap();
+    protected HashMap<String,Node> closedNodes = new HashMap();
+    protected HashMap<Node,Double> fValues = new HashMap();
+
+    //----- Location tracking Variables -----//
+    protected Node startNode;
+    protected Node destinationNode;
+    protected Node currentNode;
+    protected Node previousNode;
+
+    //---- Constructor ----//
     public Node(String name, double latitude, double longitude){
         setName(name);
         setLatitude(latitude);
         setLongitude(longitude);
-        //addNeighbour(neighbour);
     }
 
-    //---- Set Functions ----
+    //---- Set Functions ----//
     public void setName(String name){
         this.name = name;
     }
@@ -29,23 +46,27 @@ public class Node {
     public void setLongitude(double longitude){
         this.longitude =longitude;
     }
-    public void setStartVertex(Node startVertex){
-        this.startVertex = startVertex;
+
+    public void setStartNode(Node startNode){
+        this.startNode = startNode;
     }
-    public void setDestination(Node destination){
-        this.destination = destination;
+    public void setDestinationNode(Node destinationNode){
+        this.destinationNode = destinationNode;
     }
-    public void setCurrentVertex(Node currentVertex){
-        this.currentVertex = currentVertex;
+    public void setCurrentNode(Node currentNode){
+        this.currentNode = currentNode;
+    }
+    public void setPreviousNode(Node previousNode){
+        this.previousNode = previousNode;
     }
 
-    //---- Add Functions ----
+    //---- Add Functions ----//
     public void addNeighbour(Node neighbour){
 
         this.neighbours.add(neighbour);
     }
 
-    //---- Get Functions ----
+    //---- Get Functions ----//
     public String getName(){
         return name;
     }
@@ -58,17 +79,20 @@ public class Node {
     public List<Node> getNeighbours(){
         return neighbours;
     }
-    public Node getStartVertex(){
-        return startVertex;
+    public Node getStartNode(){
+        return startNode;
     }
-    public Node getDestination(){
-        return destination;
+    public Node getDestinationNode(){
+        return destinationNode;
     }
-    public Node getCurrentVertex(){
-        return currentVertex;
+    public Node getCurrentNode(){
+        return currentNode;
+    }
+    public Node getPreviousNode(){
+        return previousNode;
     }
 
-    //---- Other Methods & Functions ----
+    //---- Other Methods & Functions ----//
 
     //Returns the distance between two locations based on their latitude and longitude coordinates
     public double getDistance(double lon1, double lat1, double lon2, double lat2){
@@ -87,35 +111,75 @@ public class Node {
         return km;
     }
 
-    //returns H-value of A* algorithm
-    //todo: optimize calculateH
-    public double calculateH(Node currentVertex,Node destination){
-
-        return getDistance(currentVertex.getLongitude(),currentVertex.getLatitude(),destination.getLongitude(),destination.getLatitude());
+    //Returns H-value for A* algorithm
+    public double calculateH(Node currentNode,Node destinationNode){
+        double h;
+        if(currentNode == destinationNode){
+             h = 0;
+        }else {
+            h = getDistance(currentNode.getLongitude(), currentNode.getLatitude(), destinationNode.getLongitude(), destinationNode.getLatitude());
+        }
+        return h;
     }
 
-    //returns G-value of A* algorithm
-    //todo: optimize calculateG
-    public double calculateG(Node startVertex){
+    //Returns G-value for A* algorithm
+    public double calculateG(Node currentNode, Node previousNode){
 
-        //calculate from start all distance traveled via different nodes
-        return getDistance(startVertex.getLongitude(),startVertex.getLatitude(),this.getLongitude(),this.getLatitude());
+        double g;
+        if(currentNode == previousNode || previousNode == null){
+            g = 0;
+        }else{
+            g = getDistance(currentNode.getLongitude(), currentNode.getLatitude(), previousNode.getLongitude(), previousNode.getLatitude());
+        }
+
+        return g;
     }
 
-    //returns F-value of A* algorithm
-    //todo: optimzie calculateF
-    public double calculateF(Node startVertex,Node destination, Node currentVertex){
-        //F = G + H
-        double f = calculateG(startVertex) + calculateH(currentVertex,destination);
+    //Adds g value to totalG variable
+    public void updateTotalG(double g){
+        totalG += g;
+    }
+
+    //returns F-value for A* algorithm
+    public double calculateF(double h, double g){
+        double f = h + g;
         return f;
     }
 
     //Todo: create A* algorithm function
     public void calculateAStar(){
-        //todo:make code
+        System.out.println("Your start point is "+currentNode.getName()+".");
+        System.out.println("And your destination is "+destinationNode.getName()+".");
+        totalH = calculateH(startNode,destinationNode);
+        System.out.println("The starting heuristic value is "+df.format(totalH)+" km.");
+        while (currentNode != destinationNode){
+            System.out.println("Current Node is "+currentNode);
+            System.out.println("Neighbouring cities of Current Node:");
+            for (Node neighbour:currentNode.getNeighbours()){
+
+                //add if statement current not in closedlist and not in openlist
+                //if(Check if not on lists-> then do..){
+                    System.out.println(neighbour.getName());
+                    double h = calculateH(neighbour,destinationNode);
+                    double g = calculateG(neighbour,currentNode);
+                    double f = calculateF(h,g);
+                    System.out.println("H is:"+df.format(h));
+                    System.out.println("G is:"+df.format(g));
+                    System.out.println("F is:"+df.format(f));
+                        //if(f < existing f or f is null)
+                        //update fValues
+                //}
+            }
+            //add the current Node to closedlist
+            //select node from fvalues with lowest f score and make currentNode
+            //here to break the while-loop
+            currentNode = destinationNode;
+        }
+
     }
 
     //Creates the graph data used in this assignment
+    //todo: add more nodes.
     public static ArrayList<Node> createGraph(){
 
         Node hki = new Node("Helsingfors", 60.1640504, 24.7600896);
@@ -162,13 +226,13 @@ public class Node {
         for(Node node:nodes){
             System.out.println("-----------------------------");
             System.out.println("City Name: "+node.getName());
-            System.out.println("City Neighbours: ");
+            System.out.println("Neighbouring Cities: ");
 
             for(Node neighbour:node.getNeighbours()) System.out.println("     "+neighbour.getName());
 
-            System.out.println("City Coordinates: ");
-            System.out.println("     Latitude: "+node.getLatitude());
-            System.out.println("     Longitude: "+node.getLongitude());
+            //System.out.println("City Coordinates: ");
+            //System.out.println("     Latitude: "+node.getLatitude());
+            //System.out.println("     Longitude: "+node.getLongitude());
         }
     }
 }
