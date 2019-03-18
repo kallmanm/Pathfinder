@@ -16,7 +16,7 @@ public class Ui {
         //System.out.println();
 
 
-        while(!choice.equals("3")){
+        //while(!choice.equals("3")){
 
             System.out.println(" -------------------------");
             System.out.println("|1. View Nodes            |");
@@ -41,6 +41,7 @@ public class Ui {
                     }
                     System.out.println("Enter in your Starting Point (type the numeric value next to city name):");
                     int start = Integer.parseInt(input.nextLine());
+
                     System.out.println("Enter in your Destination:");
                     int destination = Integer.parseInt(input.nextLine());
 
@@ -54,9 +55,6 @@ public class Ui {
                     //Calculations start here
                     N.calculateAStar();
 
-
-                    //todo: A* algorithm comes here
-
                     break;
 
                 case "3":
@@ -69,6 +67,6 @@ public class Ui {
 
             }
 
-        }
+        //}
     }
 }

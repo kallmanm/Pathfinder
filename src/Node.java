@@ -1,5 +1,7 @@
 import java.util.*;
 import java.text.*;
+import static java.util.stream.Collectors.*;
+import static java.util.Map.Entry.*;
 
 public class Node {
 
@@ -10,25 +12,27 @@ public class Node {
 
     //----- Calculation Variables -----//
     //totalG keeps track of total distance travel in the A* algorithm
-    protected double totalG = 0;
-    //totalH keeps track of the heuristic value fron start to destination
-    protected double totalH = 0;
+    static double totalG = 0;
+    static double totalH = 0;
 
     //----- Formating -----//
     DecimalFormat df = new DecimalFormat("#.##");
 
     //----- List & Hashmap Variables -----//
     protected List<Node> neighbours = new ArrayList<>();
-    protected HashMap<String,Node> openNodes = new HashMap();
-    protected HashMap<String,Node> closedNodes = new HashMap();
-    protected HashMap<Node,Double> fValues = new HashMap();
-    //Todo: look into Java priority que
+    protected List<Node> closedNodes = new ArrayList<>();
+    protected List<Node> openNodes = new ArrayList<>();
+    protected List<Node> pathTraveled = new ArrayList<>();
+
+    //todo:fix map, is being reset between every iteration
+    protected Map<Node,Double> fValues = new HashMap();
 
     //----- Location tracking Variables -----//
     protected Node startNode;
     protected Node destinationNode;
     protected Node currentNode;
     protected Node previousNode;
+    protected Node nextNode;
 
     //---- Constructor ----//
     public Node(String name, double latitude, double longitude){
@@ -80,18 +84,6 @@ public class Node {
     public List<Node> getNeighbours(){
         return neighbours;
     }
-    public Node getStartNode(){
-        return startNode;
-    }
-    public Node getDestinationNode(){
-        return destinationNode;
-    }
-    public Node getCurrentNode(){
-        return currentNode;
-    }
-    public Node getPreviousNode(){
-        return previousNode;
-    }
 
     //---- Other Methods & Functions ----//
 
@@ -124,16 +116,27 @@ public class Node {
     }
 
     //Returns G-value for A* algorithm
-    public double calculateG(Node currentNode, Node previousNode){
+    //todo:fix g function
+    public double calculateG(Node startNode, Node currentNode){
 
-        double g;
-        if(currentNode == previousNode || previousNode == null){
-            g = 0;
-        }else{
-            g = getDistance(currentNode.getLongitude(), currentNode.getLatitude(), previousNode.getLongitude(), previousNode.getLatitude());
-        }
+        double g =totalG;
+        g = getDistance(startNode.getLongitude(), startNode.getLatitude(), currentNode.getLongitude(), currentNode.getLatitude());
 
         return g;
+
+
+    }
+
+    //todo: fix a linked list
+    public double tcg(Node source){
+        double G = 0;
+        Node current = this;
+        System.out.println("curent"+current.getName());
+        while(current != source){
+            G += calculateH(current, current.previousNode);
+            current = current.previousNode;
+        }
+        return G;
     }
 
     //Adds g value to totalG variable
@@ -147,40 +150,79 @@ public class Node {
         return f;
     }
 
-    //Todo: create A* algorithm function
+
     public void calculateAStar(){
+
         System.out.println("Your start point is "+currentNode.getName()+".");
+
         System.out.println("And your destination is "+destinationNode.getName()+".");
         totalH = calculateH(startNode,destinationNode);
-        System.out.println("The starting heuristic value is "+df.format(totalH)+" km.");
+
+        System.out.println("_____________________________________");
+
         while (currentNode != destinationNode){
-            System.out.println("Current Node is "+currentNode.getName());
-            System.out.println("Neighbouring cities of Current Node:");
+
             for (Node neighbour:currentNode.getNeighbours()){
 
                 //add if statement current not in closedlist and not in openlist
-                //if(Check if not on lists-> then do..){
-                    System.out.println(neighbour.getName());
+                if(!closedNodes.contains(neighbour)){
                     double h = calculateH(neighbour,destinationNode);
-                    double g = calculateG(neighbour,currentNode);
+                    double g = calculateG(currentNode,neighbour);
                     double f = calculateF(h,g);
-                    System.out.println("H is:"+df.format(h));
-                    System.out.println("G is:"+df.format(g));
-                    System.out.println("F is:"+df.format(f));
-                        //if(f < existing f or f is null)
-                        //update fValues
-                //}
-            }
-            //add the current Node to closedlist
-            //select node from fvalues with lowest f score and make currentNode
-            //here to break the while-loop
-            currentNode = destinationNode;
-        }
 
+                    fValues.put(neighbour, f);
+                    if(!openNodes.contains(neighbour)){
+                        openNodes.add(neighbour);
+                    }
+                    if(closedNodes.contains(previousNode)){
+                        pathTraveled.remove(previousNode);
+                    }
+                }
+            }
+
+            // Rearranges Map into a sorted hashmap with values going from smallest to biggest
+            Map<Node,Double> sortedFValues = fValues
+                    .entrySet()
+                    .stream()
+                    .sorted(comparingByValue())
+                    .collect(
+                            toMap(e -> e.getKey(), e -> e.getValue(), (e1, e2) -> e2,
+                                    LinkedHashMap::new));
+            nextNode =(Node) sortedFValues.keySet().toArray()[0];
+
+            if(openNodes.contains(nextNode)){
+                closedNodes.add(currentNode);
+            }
+
+            setPreviousNode(currentNode);
+
+            //Add current to path traveled
+            pathTraveled.add(currentNode);
+
+            //Sets lowest f-value Node to current position
+            setCurrentNode(nextNode);
+
+            //removes used f-values from list
+            System.out.println(fValues);
+            fValues.remove(nextNode);
+            System.out.println(fValues);
+
+            if(currentNode == destinationNode){
+                pathTraveled.add(destinationNode);
+                System.out.println("Path traveled: ");
+                System.out.println(">>"+startNode.getName());
+                for(Node element: pathTraveled){
+                    if(element != startNode) {
+                        System.out.println(">>" + element.getName());
+                    }
+                }
+
+            }
+        }
     }
 
     //Creates the graph data used in this assignment
-    //todo: add more nodes.
+
     public static ArrayList<Node> createGraph(){
 
         Node hki = new Node("Helsingfors", 60.1640504, 24.7600896);
@@ -236,4 +278,6 @@ public class Node {
             System.out.println("     Longitude: "+node.getLongitude());
         }
     }
+
+
 }
