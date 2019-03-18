@@ -22,6 +22,7 @@ public class Node {
     protected HashMap<String,Node> openNodes = new HashMap();
     protected HashMap<String,Node> closedNodes = new HashMap();
     protected HashMap<Node,Double> fValues = new HashMap();
+    //Todo: look into Java priority que
 
     //----- Location tracking Variables -----//
     protected Node startNode;
@@ -153,7 +154,7 @@ public class Node {
         totalH = calculateH(startNode,destinationNode);
         System.out.println("The starting heuristic value is "+df.format(totalH)+" km.");
         while (currentNode != destinationNode){
-            System.out.println("Current Node is "+currentNode);
+            System.out.println("Current Node is "+currentNode.getName());
             System.out.println("Neighbouring cities of Current Node:");
             for (Node neighbour:currentNode.getNeighbours()){
 
@@ -230,9 +231,9 @@ public class Node {
 
             for(Node neighbour:node.getNeighbours()) System.out.println("     "+neighbour.getName());
 
-            //System.out.println("City Coordinates: ");
-            //System.out.println("     Latitude: "+node.getLatitude());
-            //System.out.println("     Longitude: "+node.getLongitude());
+            System.out.println("City Coordinates: ");
+            System.out.println("     Latitude: "+node.getLatitude());
+            System.out.println("     Longitude: "+node.getLongitude());
         }
     }
 }
