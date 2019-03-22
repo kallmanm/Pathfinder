@@ -7,7 +7,7 @@ public class Calculations implements Comparable<Node> {
     List<Node> dataList = new ArrayList<>();
     //Todo: A* calc
 
-    //todo: Hcalc
+
     //todo: Gcalc
     //todo: Fcalc
 
@@ -46,10 +46,36 @@ public class Calculations implements Comparable<Node> {
         double h;
         if(start == destination){
             h = 0;
+        }else if(start == null){
+            h = 0;
         }else {
             h = getDistance(start.getLongitude(), start.getLatitude(), destination.getLongitude(), destination.getLatitude());
         }
         return h;
+    }
+
+    //Returns G-value for A* algorithm
+    public double calculateG(Node current, Node start){
+
+        double g = 0;
+        double tg= 0;
+
+        System.out.println("my start point is: "+start.getName());
+
+        do{
+
+            System.out.println("my current point is: "+current.getName());
+            System.out.println("my current previous point was: "+current.previous.getName());
+            g = calculateH(current,current.previous);
+            System.out.println("distance: "+g);
+            tg+=g;
+            current = current.previous;
+        }while (current !=start);
+
+        System.out.println("Total distance: "+tg);
+        return tg;
+
+
     }
 
 
