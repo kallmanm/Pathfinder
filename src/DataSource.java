@@ -14,7 +14,7 @@ public class DataSource {
 
         //Förbindelser från Helsingfors tågstation
         hki.setNeighbour(tpe); //Tammerfors
-        hki.setNeighbour(tku); //Åbo
+            hki.setNeighbour(tku); //Åbo
         hki.setNeighbour(lhi); //Lahtis
         //Förbindelser från Tammerfors tågstation
         tpe.setNeighbour(hki); //Helsingfors

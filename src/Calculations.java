@@ -2,14 +2,14 @@ import java.util.*;
 
 public class Calculations implements Comparable<Node> {
 
+    //----- Variables -----//
+    double startDestinationHvalue;
+
+    //todo:fix priorityQueue
     PriorityQueue<Node> fValues = new PriorityQueue();
-
     List<Node> dataList = new ArrayList<>();
-    //Todo: A* calc
-
-
-    //todo: Gcalc
-    //todo: Fcalc
+    List<Node> closedCityList = new ArrayList<>();
+    Double fValueToBeat;
 
     //---- Constructor ----//
     public Calculations(List<Node> dataList){
@@ -41,12 +41,14 @@ public class Calculations implements Comparable<Node> {
         return km;
     }
 
-    //Returns H-value for A* algorithm
+    //------ Returns H-value for A* algorithm ------//
     public double calculateH(Node start,Node destination){
         double h;
         if(start == destination){
             h = 0;
         }else if(start == null){
+            h = 0;
+        }else if(destination == null){
             h = 0;
         }else {
             h = getDistance(start.getLongitude(), start.getLatitude(), destination.getLongitude(), destination.getLatitude());
@@ -54,33 +56,86 @@ public class Calculations implements Comparable<Node> {
         return h;
     }
 
-    //Returns G-value for A* algorithm
-    public double calculateG(Node current, Node start){
+    //------ Returns G-value for A* algorithm ------//
+    //todo:fix calcG
+    //remove one input parameter and see if it fixes the NullPointError
+    public double calculateG(Node current){
+        //System.out.println("--------------*****-----------------");
+        double totalg= 0;
 
-        double g = 0;
-        double tg= 0;
-
-        System.out.println("my start point is: "+start.getName());
-
-        do{
-
-            System.out.println("my current point is: "+current.getName());
-            System.out.println("my current previous point was: "+current.previous.getName());
-            g = calculateH(current,current.previous);
-            System.out.println("distance: "+g);
-            tg+=g;
+        while (current.previous != null){
+            //System.out.println("Calculating distance from: "+ current.getName()+" Via ->>");
+            totalg += calculateH(current,current.previous);
             current = current.previous;
-        }while (current !=start);
-
-        System.out.println("Total distance: "+tg);
-        return tg;
-
-
+        }
+        //System.out.println("Arriving at: "+ current.getName());
+        //System.out.println("total g is: "+ totalg);
+        return totalg;
     }
 
+    //------ Returns F-value for A* alogrithm ------//
+    public double calculateF(double h, double g){
+        double f = h + g;
+        return f;
+    }
+
+    public String calculateAStar(Node start, Node destination){
+        System.out.println("Starting Point: "+start.getName()+" - to Destination: "+destination.getName());
+        startDestinationHvalue = calculateH(start,destination);
+        System.out.println("The Heuristic distance from Start to Destination is: "+startDestinationHvalue);
+        String fastestPath="placeholder value";
+        Node current = start;
+
+        while(current != destination){
+            System.out.println("i am in: "+ current.getName());
+            for(Node neighbor:current.getNeighbours()){
+                if(!closedCityList.contains(neighbor)){
+                    neighbor.setPrevious(current);
+                    System.out.println("suggestion: "+current.getName()+" -> "+neighbor.getName());
+                    double h = calculateH(neighbor,destination);
+                    double g = calculateG(neighbor);
+                    double f = calculateF(h,g);
+                    neighbor.setfValue(f);
+
+                    //System.out.println("h: "+h);
+                    //System.out.println("g: "+g);
+                    System.out.println("f: "+f);
+                    fValues.add(neighbor);
+                }
+            }
+            System.out.println("fvaluelist: "+fValues);
+            closedCityList.add(current);
+
+            System.out.println("Moving to next city: "+fValues.peek().getName());
+            System.out.println("-----------");
+            current = fValues.peek();
+            fValues.remove();
+
+        }
+        fValueToBeat=current.fValue;
+        System.out.println("f-value to beat still: "+fValueToBeat);
+        System.out.println("fvaluelist: "+fValues);
+
+
+        return fastestPath;
+    }
 
     @Override
     public int compareTo(Node o) {
         return 0;
     }
 }
+//System.out.println("fvalue List atm: ");
+//for (Node e: fValues) {
+//    System.out.println(e.getName());
+//    System.out.println(e.fValue);
+//}
+            /*while(!fValues.isEmpty()){
+                for (Node e: fValues) {
+                    System.out.println(e.getName());
+                    System.out.println(e.fValue);
+                }
+                System.out.println("the peek atm is: "+fValues.peek().getName());
+                System.out.println("----------");
+                fValues.remove();
+            }*/
