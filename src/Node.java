@@ -79,10 +79,7 @@ public class Node implements Comparable<Node> {
     //required override
     @Override
     public String toString() {
-        return "Node{" +
-                "name='" + name + '\'' +
-                ", fValue=" + fValue +
-                '}';
+        return name ;
     }
 
     //required override

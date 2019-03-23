@@ -8,8 +8,7 @@ public class Calculations implements Comparable<Node> {
     //todo:fix priorityQueue
     PriorityQueue<Node> fValues = new PriorityQueue();
     List<Node> dataList = new ArrayList<>();
-    List<Node> closedCityList = new ArrayList<>();
-    Double fValueToBeat;
+    Node start;
 
     //---- Constructor ----//
     public Calculations(List<Node> dataList){
@@ -57,19 +56,15 @@ public class Calculations implements Comparable<Node> {
     }
 
     //------ Returns G-value for A* algorithm ------//
-    //todo:fix calcG
-    //remove one input parameter and see if it fixes the NullPointError
-    public double calculateG(Node current){
-        //System.out.println("--------------*****-----------------");
-        double totalg= 0;
 
-        while (current.previous != null){
-            //System.out.println("Calculating distance from: "+ current.getName()+" Via ->>");
+    public double calculateG(Node current){
+
+        double totalg= 0;
+        while (current.previous != start){
             totalg += calculateH(current,current.previous);
             current = current.previous;
         }
-        //System.out.println("Arriving at: "+ current.getName());
-        //System.out.println("total g is: "+ totalg);
+
         return totalg;
     }
 
@@ -79,45 +74,55 @@ public class Calculations implements Comparable<Node> {
         return f;
     }
 
-    public String calculateAStar(Node start, Node destination){
-        System.out.println("Starting Point: "+start.getName()+" - to Destination: "+destination.getName());
-        startDestinationHvalue = calculateH(start,destination);
-        System.out.println("The Heuristic distance from Start to Destination is: "+startDestinationHvalue);
-        String fastestPath="placeholder value";
+    public List<Node> calculateAStar(Node start, Node destination){
+        List<Node> candidates = new ArrayList<>();
+        List<Node> visited = new ArrayList<>();
         Node current = start;
+        boolean done = false;
+        System.out.println(start.getName()+" >>> "+destination.getName());
+        this.start = start;
 
-        while(current != destination){
-            System.out.println("i am in: "+ current.getName());
-            for(Node neighbor:current.getNeighbours()){
-                if(!closedCityList.contains(neighbor)){
-                    neighbor.setPrevious(current);
-                    System.out.println("suggestion: "+current.getName()+" -> "+neighbor.getName());
-                    double h = calculateH(neighbor,destination);
-                    double g = calculateG(neighbor);
-                    double f = calculateF(h,g);
-                    neighbor.setfValue(f);
+        while(done == false){
+            double minF= 0;
+            Node next = null;
 
-                    //System.out.println("h: "+h);
-                    //System.out.println("g: "+g);
-                    System.out.println("f: "+f);
-                    fValues.add(neighbor);
+            for (Node neighbor : current.getNeighbours()) {
+                if(!candidates.contains(neighbor) && !visited.contains(neighbor)){
+                    candidates.add(neighbor);
+                    neighbor.previous= current;
                 }
             }
-            System.out.println("fvaluelist: "+fValues);
-            closedCityList.add(current);
+            for (Node element: candidates){
+                if(element == destination){
+                    done = true;
+                    double e = calculateF(calculateH(element,destination),calculateG(element));
+                    element.setfValue(e);
+                }else{
+                    double f = calculateF(calculateH(element,destination),calculateG(element));
+                    if(minF == 0 || minF>f){
+                        minF = f;
+                        element.setfValue(minF);
+                        next = element;
+                    }
+                }
+            }
 
-            System.out.println("Moving to next city: "+fValues.peek().getName());
-            System.out.println("-----------");
-            current = fValues.peek();
-            fValues.remove();
-
+            if(done == false){
+                current=next;
+                visited.add(current);
+                candidates.remove(current);
+            }
         }
-        fValueToBeat=current.fValue;
-        System.out.println("f-value to beat still: "+fValueToBeat);
-        System.out.println("fvaluelist: "+fValues);
+        List<Node> route = new ArrayList<>();
+        current = destination;
+        while(current != start){
 
+            route.add(current);
+            current = current.previous;
+        }
+        route.add(start);
 
-        return fastestPath;
+        return route;
     }
 
     @Override
@@ -125,17 +130,3 @@ public class Calculations implements Comparable<Node> {
         return 0;
     }
 }
-//System.out.println("fvalue List atm: ");
-//for (Node e: fValues) {
-//    System.out.println(e.getName());
-//    System.out.println(e.fValue);
-//}
-            /*while(!fValues.isEmpty()){
-                for (Node e: fValues) {
-                    System.out.println(e.getName());
-                    System.out.println(e.fValue);
-                }
-                System.out.println("the peek atm is: "+fValues.peek().getName());
-                System.out.println("----------");
-                fValues.remove();
-            }*/

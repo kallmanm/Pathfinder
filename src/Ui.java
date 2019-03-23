@@ -6,6 +6,7 @@ public class Ui {
 
         Calculations dataCalculations = new Calculations(DataSource.createDataSet());
         List<Node> cities = dataCalculations.dataList;
+        List<Node> result = new ArrayList<>();
 
         String choice = "0";
         Scanner input= new Scanner(System.in);
@@ -45,7 +46,11 @@ public class Ui {
                     System.out.println("Enter in your Destination:");
                     int destination = Integer.parseInt(input.nextLine());
 
-                    dataCalculations.calculateAStar(cities.get(start-1),cities.get(destination-1));
+                    result = dataCalculations.calculateAStar(cities.get(start-1),cities.get(destination-1));
+                    for(int j = result.size()-1;j>=0;j--){
+                        System.out.println((result.size()-j)+". "+result.get(j));
+                    }
+
                     break;
 
                 case "3":
@@ -68,13 +73,3 @@ public class Ui {
 //3.jyvä
 //4.kuopio
 //5.lahtis
-
-//System.out.println(dataCalculations.getDistance(cities.get(0).longitude,cities.get(0).latitude,cities.get(1).longitude,cities.get(1).latitude));
-//cities.get(0).setPrevious(cities.get(2));
-//cities.get(1).setPrevious(cities.get(0));
-//cities.get(3).setPrevious(cities.get(1));
-//System.out.println(dataCalculations.calculateH(cities.get(0),cities.get(1)));
-//dataCalculations.calculateG(cities.get(3),cities.get(0));
-//cities.get(0).setPrevious(cities.get(2));
-//cities.get(1).setPrevious(cities.get(0));
-//System.out.println(dataCalculations.calculateG(cities.get(0)));
