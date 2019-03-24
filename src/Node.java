@@ -62,7 +62,7 @@ public class Node implements Comparable<Node> {
         return fValue;
     }
 
-    //todo:fix
+    //-----  Overrides required for implementation of Compare class to work -----//
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -71,18 +71,19 @@ public class Node implements Comparable<Node> {
         return Double.compare(n.fValue, fValue) == 0 &&
                 Objects.equals(name, n.name);
     }
-    //required override
+
     @Override
     public int hashCode() {
         return Objects.hash(name, fValue);
     }
-    //required override
+
     @Override
     public String toString() {
-        return name ;
+        //return name+" - fvalue: "+fValue;
+        return name;
     }
 
-    //required override
+
     @Override
     public int compareTo(Node n) {
         if (this.getfValue() > n.getfValue()) {

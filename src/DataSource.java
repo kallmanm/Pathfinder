@@ -2,7 +2,7 @@ import java.util.*;
 
 public class DataSource {
 
-    //Creates the graph data used in this assignment
+    //----- Creates the graph data used in this assignment -----//
     public static ArrayList<Node> createDataSet(){
 
         Node hki = new Node("Helsingfors", 60.1640504, 24.7600896);
@@ -44,7 +44,7 @@ public class DataSource {
         return graph;
     }
 
-    //Prints out in console all Nodes and all relating information to the Nodes
+    //----- Prints out in console all Nodes and all relating information to the Nodes -----//
     public static void printNodes(List<Node>nodes){
         for(Node node:nodes){
             System.out.println("-----------------------------");

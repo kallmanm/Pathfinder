@@ -3,10 +3,6 @@ import java.util.*;
 public class Calculations implements Comparable<Node> {
 
     //----- Variables -----//
-    double startDestinationHvalue;
-
-    //todo:fix priorityQueue
-    PriorityQueue<Node> fValues = new PriorityQueue();
     List<Node> dataList = new ArrayList<>();
     Node start;
 
@@ -43,24 +39,23 @@ public class Calculations implements Comparable<Node> {
     //------ Returns H-value for A* algorithm ------//
     public double calculateH(Node start,Node destination){
         double h;
-        if(start == destination){
+        /*if(start == destination){
             h = 0;
         }else if(start == null){
             h = 0;
         }else if(destination == null){
             h = 0;
-        }else {
+        }else {*/
             h = getDistance(start.getLongitude(), start.getLatitude(), destination.getLongitude(), destination.getLatitude());
-        }
+        //}
         return h;
     }
 
     //------ Returns G-value for A* algorithm ------//
-
     public double calculateG(Node current){
 
         double totalg= 0;
-        while (current.previous != start){
+        while (current.previous != null){
             totalg += calculateH(current,current.previous);
             current = current.previous;
         }
@@ -74,55 +69,105 @@ public class Calculations implements Comparable<Node> {
         return f;
     }
 
+    //----- A* allgorithm -----//
     public List<Node> calculateAStar(Node start, Node destination){
-        List<Node> candidates = new ArrayList<>();
-        List<Node> visited = new ArrayList<>();
+        PriorityQueue<Node> visited = new PriorityQueue();
+        PriorityQueue<Node> fValueList = new PriorityQueue();
+        List<Node> hasBeenExplored = new ArrayList<>();
+        hasBeenExplored.add(start);
         Node current = start;
-        boolean done = false;
-        System.out.println(start.getName()+" >>> "+destination.getName());
-        this.start = start;
+        fValueList.add(current);
+        double distanceToBeat;
 
-        while(done == false){
-            double minF= 0;
-            Node next = null;
+        // this while-loop finds the first route to destination, but might not be the optimal route to take.
+        while (fValueList.size()>0) {
 
             for (Node neighbor : current.getNeighbours()) {
-                if(!candidates.contains(neighbor) && !visited.contains(neighbor)){
-                    candidates.add(neighbor);
-                    neighbor.previous= current;
+                if (!fValueList.contains(neighbor) && !visited.contains(neighbor)) {
+                    neighbor.setPrevious(current);
+                    double h = calculateH(neighbor, destination);
+                    double g = calculateG(neighbor);
+                    double f = calculateF(h, g);
+                    neighbor.setfValue(f);
+                    if (!fValueList.contains(neighbor)) {
+                        fValueList.add(neighbor);
+                    }
+
                 }
             }
-            for (Node element: candidates){
-                if(element == destination){
-                    done = true;
-                    double e = calculateF(calculateH(element,destination),calculateG(element));
-                    element.setfValue(e);
-                }else{
-                    double f = calculateF(calculateH(element,destination),calculateG(element));
-                    if(minF == 0 || minF>f){
-                        minF = f;
-                        element.setfValue(minF);
-                        next = element;
-                    }
-                }
+            if (!visited.contains(current)) {
+                visited.add(current);
             }
 
-            if(done == false){
-                current=next;
-                visited.add(current);
-                candidates.remove(current);
+            fValueList.remove(current);
+            current=fValueList.peek();
+        }
+
+
+        List<Node> route = updateRoute(destination,start);
+
+        distanceToBeat= calculateG(destination);
+        for(Node element: route){
+            if(visited.contains(element)){
+                hasBeenExplored.add(element);
+                visited.remove(element);
             }
         }
-        List<Node> route = new ArrayList<>();
-        current = destination;
-        while(current != start){
 
-            route.add(current);
-            current = current.previous;
+        // In this while-loop we revisit Nodes with fvalues that are lower than the current best route
+        // The best route's value is recorded in the variable distanceToBeat and the path to take is recorded in the variable route
+        // If the while-loop finds a new optimal path it will updated route
+        // Once completed it will return the value.
+        while (visited.size()>0) {
+            current = visited.peek();
+
+            for (Node neighbor : current.getNeighbours()) {
+                if(!neighbor.equals(current.previous)){
+                    if(!neighbor.equals(start)) {
+
+                        neighbor.setPrevious(current);
+                        double g = calculateG(neighbor);
+                        double h = calculateH(neighbor, destination);
+                        neighbor.setfValue(calculateF(h,g));
+
+                        if (neighbor.getfValue() < distanceToBeat) {
+
+                            neighbor.setPrevious(current);
+                            visited.add(neighbor);
+                            if (neighbor.equals(destination)) {
+                                route = updateRoute(destination, start);
+
+                            }
+                        }
+                    }
+                }
+
+            }
+            visited.remove();
+        }
+
+        return route;
+    }
+
+    //----- Method for calculating route to take from destination to start -----//
+    public List<Node> updateRoute(Node destination, Node start){
+        List<Node> route = new ArrayList<>();
+        while(destination != start){
+
+            route.add(destination);
+            destination = destination.previous;
         }
         route.add(start);
 
         return route;
+    }
+
+    //----- Resets Node data for new calculation ------//
+    public void resetNodes(){
+        for (Node e: dataList){
+            e.previous = null;
+        }
+
     }
 
     @Override

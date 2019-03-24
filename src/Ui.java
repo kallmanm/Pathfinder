@@ -4,6 +4,7 @@ public class Ui {
 
     public static void menu() {
 
+        //---- Variables & Lists used to run the UI -----//
         Calculations dataCalculations = new Calculations(DataSource.createDataSet());
         List<Node> cities = dataCalculations.dataList;
         List<Node> result = new ArrayList<>();
@@ -11,6 +12,7 @@ public class Ui {
         String choice = "0";
         Scanner input= new Scanner(System.in);
 
+        //----- Main conditional loop for program options -----//
         while(!choice.equals("3")){
 
             System.out.println(" -------------------------");
@@ -23,17 +25,12 @@ public class Ui {
 
             switch(choice){
 
+                //----- Prints out to console all Nodes and their information -----//
                 case "1":
-                    //DataSource.printNodes(cities);
-                    double a=dataCalculations.calculateH(cities.get(3),cities.get(1));
-                    double b=dataCalculations.calculateH(cities.get(1),cities.get(0));
-                    System.out.println(a+b);
-                    double c=dataCalculations.calculateH(cities.get(3),cities.get(1));
-                    double d=dataCalculations.calculateH(cities.get(1),cities.get(5));
-                    double e=dataCalculations.calculateH(cities.get(5),cities.get(0));
-                    System.out.println(c+d+e);
+                    DataSource.printNodes(cities);
                     break;
 
+                //----- Runs the A* algorithm -----//
                 case "2":
                     System.out.println("Choose a Starting Point & a Destination from the following Cities:");
                     int i = 0;
@@ -47,29 +44,24 @@ public class Ui {
                     int destination = Integer.parseInt(input.nextLine());
 
                     result = dataCalculations.calculateAStar(cities.get(start-1),cities.get(destination-1));
+                    System.out.println("The optimal route is:");
                     for(int j = result.size()-1;j>=0;j--){
                         System.out.println((result.size()-j)+". "+result.get(j));
                     }
-
+                    dataCalculations.resetNodes();
                     break;
 
+                //----- Shuts down the UI interface -----//
                 case "3":
                     System.out.println("Exiting Program, Goodbye!");
                     break;
 
+                //----- default value in case of invalid input -----//
                 default:
                     System.out.println("Invalid Input, try again...");
                     break;
 
             }
-
         }
-
     }
 }
-//0.helsinki
-//1.tammerfors
-//2.åbo
-//3.jyvä
-//4.kuopio
-//5.lahtis
